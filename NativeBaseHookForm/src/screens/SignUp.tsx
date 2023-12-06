@@ -2,6 +2,8 @@ import { VStack, Heading, Center } from 'native-base'
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup';
 
 type SubmitProps = {
   nome: string
@@ -10,8 +12,17 @@ type SubmitProps = {
   confirmarSenha: string
 }
 
+const signUpSchema = yup.object({
+  nome: yup.string().required('Informe o nome.'),
+  email: yup.string().required('Informe o e-mail.').email('Email Inválido.'),
+  senha: yup.string().required('Informe a senha.').min(10, "A senha deve ter pelo menos 10 dígitos."),
+  confirmarSenha: yup.string().required('Informe a confirmação de senha.').oneOf([yup.ref('senha'), ''], 'A confirmação de senha não é igual.')
+});
+
 export function SignUp() {
-  const { control, handleSubmit, formState: { errors } } = useForm<SubmitProps>();
+  const { control, handleSubmit, formState: { errors } } = useForm<SubmitProps>({
+    resolver: yupResolver(signUpSchema)
+  });
 
   function handleSignUp(data: SubmitProps) {
     console.log(data)
@@ -24,9 +35,6 @@ export function SignUp() {
         <Controller
           control={control}
           name='nome'
-          rules={{
-            required: "Informe o nome."
-          }}
           render={({ field: { onChange } }) => (
             <Input errorMessage={errors.nome?.message} placeholder="Nome" onChangeText={onChange} />
           )}
@@ -35,13 +43,6 @@ export function SignUp() {
         <Controller
           name='email'
           control={control}
-          rules={{
-            required: "Informe o e-mail.",
-            pattern: {
-              value: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
-              message: "E-mail inválido."
-            }
-          }}
           render={({ field: { onChange } }) => (
             <Input errorMessage={errors.email?.message} placeholder="E-mail" onChangeText={onChange} />
           )}
@@ -50,22 +51,16 @@ export function SignUp() {
         <Controller
           name='senha'
           control={control}
-          rules={{
-            required: "Informe a senha."
-          }}
           render={({ field: { onChange } }) => (
-            <Input placeholder="Senha" onChangeText={onChange} secureTextEntry />
+            <Input errorMessage={errors.senha?.message} placeholder="Senha" onChangeText={onChange} secureTextEntry />
           )}
         />
 
         <Controller
           name='confirmarSenha'
           control={control}
-          rules={{
-            required: "Informe a confirmação de senha.",
-          }}
           render={({ field: { onChange } }) => (
-            <Input placeholder="Confirme a senha" onChangeText={onChange} secureTextEntry />
+            <Input errorMessage={errors.confirmarSenha?.message} placeholder="Confirme a senha" onChangeText={onChange} secureTextEntry />
           )}
         />
         <Button title="Cadastrar" onPress={handleSubmit(handleSignUp)} />

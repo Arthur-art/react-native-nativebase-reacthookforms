@@ -8,6 +8,7 @@ export function Button({ title, ...rest }: Props) {
 
     return (
         <NativeBaseButton
+            {...rest}
             w="full"
             h={16}
             bg="blueGray.400"
